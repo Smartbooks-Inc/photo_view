@@ -1,7 +1,6 @@
 library photo_view;
 
 import 'package:flutter/material.dart';
-
 import 'package:photo_view/src/controller/photo_view_controller.dart';
 import 'package:photo_view/src/controller/photo_view_scalestate_controller.dart';
 import 'package:photo_view/src/core/photo_view_core.dart';
@@ -38,6 +37,7 @@ export 'src/utils/photo_view_hero_attributes.dart';
 ///            ),
 ///          ),
 ///  backgroundDecoration: BoxDecoration(color: Colors.black),
+///  semanticLabel: 'Some label',
 ///  gaplessPlayback: false,
 ///  customSize: MediaQuery.of(context).size,
 ///  heroAttributes: const HeroAttributes(
@@ -68,6 +68,7 @@ export 'src/utils/photo_view_hero_attributes.dart';
 ///  ),
 ///  childSize: const Size(220.0, 250.0),
 ///  backgroundDecoration: BoxDecoration(color: Colors.black),
+///  semanticLabel: 'Some label',
 ///  gaplessPlayback: false,
 ///  customSize: MediaQuery.of(context).size,
 ///  heroAttributes: const HeroAttributes(
@@ -238,6 +239,7 @@ class PhotoView extends StatefulWidget {
     this.loadingBuilder,
     this.backgroundDecoration,
     this.wantKeepAlive = false,
+    this.semanticLabel,
     this.gaplessPlayback = false,
     this.heroAttributes,
     this.scaleStateChangedCallback,
@@ -252,6 +254,7 @@ class PhotoView extends StatefulWidget {
     this.onTapUp,
     this.onTapDown,
     this.onScaleEnd,
+    this.onDragEnd,
     this.customSize,
     this.gestureDetectorBehavior,
     this.tightMode,
@@ -288,6 +291,7 @@ class PhotoView extends StatefulWidget {
     this.onTapUp,
     this.onTapDown,
     this.onScaleEnd,
+    this.onDragEnd,
     this.customSize,
     this.gestureDetectorBehavior,
     this.tightMode,
@@ -296,6 +300,7 @@ class PhotoView extends StatefulWidget {
     this.enablePanAlways,
   })  : errorBuilder = null,
         imageProvider = null,
+        semanticLabel = null,
         gaplessPlayback = false,
         loadingBuilder = null,
         super(key: key);
@@ -318,6 +323,11 @@ class PhotoView extends StatefulWidget {
   /// `false` -> resets the state (default)
   /// `true`  -> keeps the state
   final bool wantKeepAlive;
+
+  /// A Semantic description of the image.
+  ///
+  /// Used to provide a description of the image to TalkBack on Android, and VoiceOver on iOS.
+  final String? semanticLabel;
 
   /// This is used to continue showing the old image (`true`), or briefly show
   /// nothing (`false`), when the `imageProvider` changes. By default it's set
@@ -382,6 +392,10 @@ class PhotoView extends StatefulWidget {
   /// A pointer that will trigger a scale has stopped contacting the screen at a
   /// particular location.
   final PhotoViewImageScaleEndCallback? onScaleEnd;
+
+  /// A pointer that will trigger a drag has stopped contacting the screen at a
+  /// particular location.
+  final PhotoViewImageDragEndCallback? onDragEnd;
 
   /// [HitTestBehavior] to be passed to the internal gesture detector.
   final HitTestBehavior? gestureDetectorBehavior;
@@ -526,6 +540,7 @@ class _PhotoViewState extends State<PhotoView>
                 imageProvider: widget.imageProvider!,
                 loadingBuilder: widget.loadingBuilder,
                 backgroundDecoration: backgroundDecoration,
+                semanticLabel: widget.semanticLabel,
                 gaplessPlayback: widget.gaplessPlayback,
                 heroAttributes: widget.heroAttributes,
                 scaleStateChangedCallback: widget.scaleStateChangedCallback,
@@ -540,6 +555,7 @@ class _PhotoViewState extends State<PhotoView>
                 onTapUp: widget.onTapUp,
                 onTapDown: widget.onTapDown,
                 onScaleEnd: widget.onScaleEnd,
+                onDragEnd: widget.onDragEnd,
                 outerSize: computedOuterSize,
                 gestureDetectorBehavior: widget.gestureDetectorBehavior,
                 tightMode: widget.tightMode,
@@ -598,6 +614,13 @@ typedef PhotoViewImageTapDownCallback = Function(
 typedef PhotoViewImageScaleEndCallback = Function(
   BuildContext context,
   ScaleEndDetails details,
+  PhotoViewControllerValue controllerValue,
+);
+
+/// A type definition for a callback when a user finished vertical drag
+typedef PhotoViewImageDragEndCallback = Function(
+  BuildContext context,
+  DragEndDetails details,
   PhotoViewControllerValue controllerValue,
 );
 
